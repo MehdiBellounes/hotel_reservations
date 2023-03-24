@@ -198,14 +198,16 @@ Nous avons differents **types de donnees**:
 """)
     
     st.plotly_chart(fig2)
+    st.markdown("Suite au raffinage de nos donnees nous avons observes que plus une chambre est reservee a l avance plus il y a de chance qu elle soit annulee.")
+    st.markdown("**c’est le critere majeur d annulation sur les reservations.**")
     st.plotly_chart(fig3)
-    st.subheader("graphique de ....")
+    st.markdown("Nous ne constatons **pas de correlation entre le prix de la chambre et le taux d annulation.**")
 
+    st.header("Choix du modele")
+    st.markdown("Le modele **random forest** est un algorithme qui utilise plusieurs arbres de decision pour **predire des valeurs**. Il est connu pour sa robustesse et sa capacite à traiter des donnees complexes en moyennant les predictions de chaque arbre pour donner une prediction finale.")
     image_cvs = Image.open('matrice_cross_val.jpg')
     st.image(image_cvs)
-
-    st.subheader("accuracy du modele")
-
     image_recall = Image.open('cross_validate_recall.jpg')
     st.image(image_recall)
+    st.markdown("**La matrice de confusion** est un outil pour evaluer **la qualite d'un modele de classification** en comparant ses predictions avec les vraies etiquettes d'un ensemble de donnees. La matrice de confusion **permet de calculer des mesures de performance** importantes pour evaluer la qualite du modele, telles que la precision et le rappel.")
     
