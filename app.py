@@ -39,43 +39,45 @@ df["avg_price_per_room_bins"] = pd.cut(df.avg_price_per_room, np.arange(0, 600, 
 df["avg_price_per_room_bins_text"] = df["avg_price_per_room_bins"].map(lambda x: f"{x.left}-{x.right}")#transformer ces ranges en string (car plotly n'accepte pas les bins dans les graphiques)
 fig3 = px.bar(df.groupby(by='avg_price_per_room_bins_text').mean().reset_index(), x='avg_price_per_room_bins_text', y='booking_status',labels={"avg_price_per_room_bins_text":"Prix de la chambre", "booking_status": "Taux (%) d'annulation"},title="Taux d'annulation en fonction du prix de la chambre", template = 'plotly_dark')
 
-select_tab = st.sidebar.radio("Choisir l'onglet", tabs)
+select_tab = st.sidebar.radio("Menu", tabs)
+
 if select_tab == "Prediction":
-    # apelle le module titre de la bibliotheque streamlit
-    image = Image.open('image_drole.jpeg')
-    st.image(image,width = 500)
-    st.title("Prediction de l'annulation de la chambre")
-
     # import image
-
-    
-
-    # choisi un titre pour ton app
-
-    st.header("Entrez vos criteres pour savoir si la chambre va etre annulée")
+    image = Image.open('image_drole.jpeg')
     # permet d'inserer une image que tu as importÃ©
-    
+    st.image(image,width=250)
+    # apelle le module titre de la bibliotheque streamlit  
+    st.title("Votre réservation va t'elle être annulée?")
+    st.header("Configurez  votre voyage")
+
+#bloc 1
+    col1, col2, col3, col4 = st.columns(4)
+    date_arrivee = col1.date_input("date d'arrivée")
+    date_depart = col2.date_input("date de depart")
+    no_of_adults = col3.number_input(
+        "adultes", max_value =7 , value=2)
+    no_of_children = col4.number_input(
+        "enfants", max_value =7, value=0)
+
+#bloc 2
+    col5, col6, = st.columns(2)
     # crÃ©e une selectbox qui te permet de faire plusieurs choix
-
-    no_of_adults = st.select_slider(
-        "Nombre d'adultes", options=(0, 1, 2, 3, 4, 5, 6, 7), value=2)
-    no_of_children = st.select_slider(
-        "Nombre d'enfants", options=(0, 1, 2, 3, 4, 5, 6, 7), value=0)
-
-    #date_reservation = st.date_input("quel est la date de reservation?")
-
-    # module liste dÃ©roulante pour choix du type de repas et stockage dans
-
-    type_of_meal_plan = st.selectbox('Quel type de repas', options=(
-        'Meal Plan 1', 'Meal Plan 2', 'Meal Plan 3', 'Not Selected'))
-    required_car_parking_space = st.selectbox('Parking?', options=('0', '1'))
-    room_type_reserved = st.selectbox('Quel type de chambre?', options=(
+    room_type_reserved = col5.selectbox('type de chambre', options=(
         'Room_Type 1', 'Room_Type 2', 'Room_Type 3', 'Room_Type 4', 'Room_Type 5', 'Room_Type 6', 'Room_Type 7'))
+    # crÃ©e une selectbox qui te permet de faire plusieurs choix
+    type_of_meal_plan = col6.selectbox('Option repas', options=(
+        'Not Selected', 'Meal Plan 1', 'Meal Plan 2', 'Meal Plan 3'))
+
+ #bloc 3   
+    col7, col8, = st.columns(2)
+    required_car_parking_space = col7.selectbox('Parking', options=('0', '1'))
+    # création d'une lite pour les options
+    options = ["ascenseur", "lit bebe", "tv", "playstation", "sto"]
+    special_requests = col8.multiselect("options supplémentaires", options)
+
+
 
     # # module date outpout => datetype format yea-mon-date
-
-    date_arrivee = st.date_input("quel est la date d'arrivage?")
-    date_depart = st.date_input("quel est la date de depart?")
 
     # calcul du nombre de jour entre la date d'arrivee et la date de reservation - major feature -
 
@@ -96,11 +98,11 @@ if select_tab == "Prediction":
     room_type_price_mapping = {'Room_Type 1': 96, 'Room_Type 2': 88, 'Room_Type 3': 74,
                                'Room_Type 4': 125, 'Room_Type 5': 124, 'Room_Type 6': 182, 'Room_Type 7': 155}
     avg_price_per_room = room_type_price_mapping[room_type_reserved]
-    options = ["ascenseur", "lit bebe", "tv", "playstation", "sto"]
+
 
     # module de choix des critÃ¨res pour saisie utilisateur
 
-    special_requests = st.multiselect("selectionnez les options", options)
+
 
     # stockage dans la variable de l'input nombre de choix selectionnÃ©s par user
 
@@ -163,11 +165,18 @@ if select_tab == "Prediction":
     with open('label_encoder.pkl', 'rb') as f:
         label_encoder = pickle.load(f)
     #
-    if st.button("predictions"):
-        st.write(label_encoder.inverse_transform(rfmodel.predict(booking)))
+    if st.button("predire"):
+        if label_encoder.inverse_transform(rfmodel.predict(booking)) == "Not_Canceled":
+            image_content = Image.open('content.jfif')
+            st.image(image_content)
+            st.write(f" Il y a {rfmodel.predict_proba(booking)[0,1]*100} % de chance que la reservation soit maintenue")
+        else:
+            image_triste = Image.open('triste.jfif')
+            st.image(image_triste)
+            st.write(f"Il y a {rfmodel.predict_proba(booking)[0,0]*100} % de chance que la reservation soit annulée")
 elif select_tab == "Presentation projet":
 
-    st.header("Fichier hotel reservation")
+    st.header("Hotel reservation")
     image_hotel = Image.open('image_hotel.jpg')
     st.image(image_hotel)
     st.markdown("""Suite a l augmentation des annulations pour un hotel , il a decide de nous contacter pour travailler sur ses donnees de reservation avec pour objectif de predire si la reservation va etre annulee par le client""")
@@ -175,7 +184,7 @@ elif select_tab == "Presentation projet":
 elif select_tab == "Visualisation projet":
 
     
-    st.header("Fichier hotel reservation")
+    st.header("Exploration des données")
     
     st.dataframe(df.head(5))
     st.markdown(
@@ -189,16 +198,14 @@ Nous avons differents **types de donnees**:
 """)
     
     st.plotly_chart(fig2)
-    st.markdown("Suite au raffinage de nos donnees nous avons observes que plus une chambre est reservee a l avance plus il y a de chance qu elle soit annulee.")
-    st.markdown("**c’est le critere majeur d annulation sur les reservations.**")
     st.plotly_chart(fig3)
-    st.markdown("Nous ne constatons **pas de correlation entre le prix de la chambre et le taux d annulation.**")
-    
-    st.header("Choix du model")
-    st.markdown("Le modele **random forest** est un algorithme qui utilise plusieurs arbres de decision pour **predire des valeurs**. Il est connu pour sa robustesse et sa capacite à traiter des donnees complexes en moyennant les predictions de chaque arbre pour donner une prediction finale.")
+    st.subheader("graphique de ....")
+
     image_cvs = Image.open('matrice_cross_val.jpg')
     st.image(image_cvs)
+
+    st.subheader("accuracy du modele")
+
     image_recall = Image.open('cross_validate_recall.jpg')
     st.image(image_recall)
-    st.markdown("**La matrice de confusion** est un outil pour evaluer **la qualite d'un modele de classification** en comparant ses predictions avec les vraies etiquettes d'un ensemble de donnees. La matrice de confusion **permet de calculer des mesures de performance** importantes pour evaluer la qualite du modele, telles que la precision et le rappel.")
     
